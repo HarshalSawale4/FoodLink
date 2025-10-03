@@ -1,26 +1,19 @@
 <?php
-
+//donation
 include "db.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Use the correct column names from foodlink.sql
-    $food_name = $_POST['food_name']; // Changed from food_item
+    $food_item = $_POST['food_item'];
     $quantity = $_POST['quantity'];
     $pickup_time = $_POST['pickup_time'];
     $description = $_POST['description'];
-    $status = "available";
-    $donor_id = 1; // Hardcoded for now. In a real app, this comes from the user's session.
+    $status = "Available";
 
-    // Updated INSERT statement with correct columns: food_name and donor_id
-    $stmt = $conn->prepare("INSERT INTO donations (food_name, quantity, pickup_time, description, status, donor_id, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-    
-    // Updated bind_param with the correct types ("sssssi")
-    $stmt->bind_param("sssssi", $food_name, $quantity, $pickup_time, $description, $status, $donor_id);
+    $stmt = $conn->prepare("INSERT INTO donations (food_item, quantity, pickup_time, description, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("sisss", $food_item, $quantity, $pickup_time, $description, $status);
 
     if ($stmt->execute()) {
-        // Redirect back to the dashboard on success
-        header("Location: ../donor_dashboard.php?success=1");
-        exit(); // It's good practice to exit after a redirect
+        echo "Donation posted successfully!";
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -33,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Post Donation</title>
-    <link rel="stylesheet" href="../css/post_donation.css">
+    <link rel="stylesheet" href="css/post_donation.css">
 
 </head>
 <body>
@@ -174,11 +167,10 @@ button:hover {
     <h2>Post a New Donation</h2>
     <form method="POST">
         <label>Food Item:</label><br>
-        <!-- Corrected the 'name' attribute from food_item to food_name -->
-        <input type="text" name="food_name" required><br><br>
+        <input type="text" name="food_item" required><br><br>
 
         <label>Quantity:</label><br>
-        <input type="text" name="quantity" required><br><br>
+        <input type="number" name="quantity" required><br><br>
 
         <label>Pickup Time:</label><br>
         <input type="datetime-local" name="pickup_time" required><br><br>
@@ -190,3 +182,5 @@ button:hover {
     </form>
 </body>
 </html>
+
+

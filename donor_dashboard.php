@@ -1,12 +1,8 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-include "php/db.php";
-?>
-
-<?php
-// Database connection
-include "php/db.php";
+// Note: You only need to include the database connection once.
+include "php/db.php"; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,8 +10,6 @@ include "php/db.php";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Donor Dashboard - FoodLink</title>
-
-    <link rel="stylesheet" href="css/donor_dashboard.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/donor_dashboard.css">
@@ -196,6 +190,8 @@ nav ul li a:hover {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s;
+  cursor: pointer; /* Ensure buttons look clickable */
+  border: none;
 }
 
 .btn-primary {
@@ -217,6 +213,17 @@ nav ul li a:hover {
   background: var(--secondary);
   color: var(--white);
 }
+
+/* ✨ NEW - Delete Button Style */
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
 
 /* 🔹 Active Donations */
 .food-listings {
@@ -275,6 +282,13 @@ nav ul li a:hover {
   align-items: center;
 }
 
+/* ✨ NEW - Container for buttons */
+.card-actions {
+    display: flex;
+    gap: 10px; /* Space between Edit and Delete buttons */
+}
+
+
 /* Status Badges */
 .status-badge {
   padding: 4px 10px;
@@ -324,8 +338,6 @@ nav ul li a:hover {
     grid-template-columns: 1fr;
   }
 }
-
-
 </style>
 <body>
     <header>
@@ -340,7 +352,7 @@ nav ul li a:hover {
                         <li><a href="index.html">Home</a></li>
                         <li><a href="#">Dashboard</a></li>
                         <li><a href="#">Donations</a></li>
-                        <li><a href="#">Impact</a></li>
+                        <li><a href="php/impact_report.php">Impact</a></li>
                     </ul>
                 </nav>
                 <div class="auth-buttons">
@@ -358,9 +370,9 @@ nav ul li a:hover {
                 <div class="dashboard-sidebar">
                     <div class="sidebar-menu">
                         <a href="#" class="active"><i class="fas fa-home"></i> Overview</a>
-                        <<a href="php/post_donation.php" class="btn btn-primary"></i> Post Donation</a>
+                        <a href="php/post_donation.php"><i class="fas fa-plus-circle"></i> Post Donation</a>
                         <a href="#"><i class="fas fa-history"></i> Donation History</a>
-                        <a href="#"><i class="fas fa-chart-line"></i> Impact Report</a>
+                        <a href="php/impact_report.php"><i class="fas fa-chart-line"></i> Impact Report</a>
                         <a href="#"><i class="fas fa-cog"></i> Settings</a>
                     </div>
                     
@@ -412,7 +424,7 @@ nav ul li a:hover {
                                             <i class='fas fa-utensils'></i>
                                         </div>
                                         <div class='food-details'>
-                                            <h4 class='food-title'>{$row['food_name']}</h4>
+                                            <h4 class='food-title'>{$row['food_item']}</h4>
                                             <div class='food-info'>
                                                 <span><i class='fas fa-utensils'></i> {$row['quantity']}</span>
                                                 <span><i class='fas fa-clock'></i> Pickup by {$row['pickup_time']}</span>
@@ -420,7 +432,15 @@ nav ul li a:hover {
                                             <p class='food-description'>{$row['description']}</p>
                                             <div class='food-status'>
                                                 <span class='status-badge $status_class'>{$row['status']}</span>
-                                                <button class='btn btn-outline'>Edit</button>
+                                                
+                                                <div class='card-actions'>
+                                                    <button class='btn btn-outline'>Edit</button>
+                                                    
+                                                    <form action='php/delete_post.php' method='POST' onsubmit=\"return confirm('Are you sure you want to delete this donation post?');\">
+                                                        <input type='hidden' name='donation_id' value='{$row['id']}'>
+                                                        <button type='submit' name='delete_post' class='btn btn-danger'>Delete</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -442,7 +462,7 @@ nav ul li a:hover {
                                     <th>Quantity</th>
                                     <th>Status</th>
                                     <th>Date</th>
-                                </tr>
+                                    <th>Actions</th> </tr>
                             </thead>
                             <tbody>
                                 <?php
@@ -457,15 +477,22 @@ nav ul li a:hover {
 
                                         echo "
                                         <tr>
-                                            <td>{$row['food_name']}</td>
+                                            <td>{$row['food_item']}</td>
                                             <td>{$row['quantity']}</td>
                                             <td><span class='status-badge $status_class'>{$row['status']}</span></td>
                                             <td>".date("M d, Y", strtotime($row['created_at']))."</td>
+                                            
+                                            <td>
+                                                <form action='php/delete_post.php' method='POST' onsubmit=\"return confirm('Are you sure you want to delete this donation post?');\">
+                                                    <input type='hidden' name='donation_id' value='{$row['id']}'>
+                                                    <button type='submit' name='delete_post' class='btn btn-danger'>Delete</button>
+                                                </form>
+                                            </td>
                                         </tr>
                                         ";
                                     }
                                 } else {
-                                    echo "<tr><td colspan='4' class='text-muted'>No recent donations found.</td></tr>";
+                                    echo "<tr><td colspan='5' class='text-muted'>No recent donations found.</td></tr>";
                                 }
                                 ?>
                             </tbody>
@@ -475,19 +502,6 @@ nav ul li a:hover {
             </div>
         </div>
     </section>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-  const modal = document.getElementById("postDonationModal");
-  const btn = document.getElementById("openPostModal");
-  const span = document.querySelector(".modal .close");
-
-  btn.onclick = () => modal.style.display = "block";
-  span.onclick = () => modal.style.display = "none";
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; }
-});
-
-    </script>
 
 </body>
 </html>

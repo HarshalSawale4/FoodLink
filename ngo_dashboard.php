@@ -103,8 +103,7 @@ include "php/db.php";
                       <i class='fas fa-apple-alt'></i>
                     </div>
                     <div class='food-details'>
-                      <!-- THIS IS THE FIX: food_item changed to food_name -->
-                      <h4 class='food-title'>{$row['food_name']}</h4>
+                      <h4 class='food-title'>{$row['food_item']}</h4>
                       <div class='food-info'>
                         <span><i class='fas fa-utensils'></i> {$row['quantity']}</span>
                         <span><i class='fas fa-clock'></i> Pickup by {$row['pickup_time']}</span>
